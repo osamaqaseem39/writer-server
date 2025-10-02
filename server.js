@@ -18,10 +18,35 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
+
+// CORS configuration - more flexible for development
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow specific origins or all origins in development
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    
+    if (process.env.NODE_ENV === 'development' || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -42,6 +67,52 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/writer-we
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => console.error('MongoDB connection error:', err));
 
+// Root route - API documentation
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Writer Server API',
+    version: '1.0.0',
+    status: 'Running',
+    endpoints: {
+      auth: '/api/auth',
+      books: '/api/books',
+      orders: '/api/orders',
+      blog: '/api/blog',
+      reviews: '/api/reviews',
+      users: '/api/users',
+      payments: '/api/payments',
+      gallery: '/api/gallery',
+      health: '/api/health'
+    },
+    documentation: 'Available endpoints listed above'
+  });
+});
+
+// API root route
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Writer Server API v1.0.0',
+    status: 'Running',
+    timestamp: new Date().toISOString(),
+    endpoints: [
+      'GET /api/health - Health check',
+      'POST /api/auth/register - User registration',
+      'POST /api/auth/login - User login',
+      'GET /api/books - Get all books',
+      'POST /api/books - Create new book',
+      'GET /api/blog - Get blog posts',
+      'POST /api/blog - Create blog post',
+      'GET /api/gallery - Get gallery images',
+      'POST /api/gallery - Upload gallery image',
+      'GET /api/reviews - Get reviews',
+      'POST /api/reviews - Create review',
+      'GET /api/orders - Get orders',
+      'POST /api/orders - Create order',
+      'POST /api/payments/process - Process payment'
+    ]
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
@@ -54,7 +125,13 @@ app.use('/api/gallery', galleryRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Error handling middleware
@@ -68,7 +145,25 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ 
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method,
+    suggestion: 'Visit / or /api for available endpoints',
+    availableRoutes: [
+      '/',
+      '/api',
+      '/api/health',
+      '/api/auth/*',
+      '/api/books/*',
+      '/api/blog/*',
+      '/api/gallery/*',
+      '/api/reviews/*',
+      '/api/orders/*',
+      '/api/payments/*',
+      '/api/users/*'
+    ]
+  });
 });
 
 const PORT = process.env.PORT || 5000;
