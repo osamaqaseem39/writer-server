@@ -19,21 +19,24 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration - more flexible for development
+// CORS configuration - allow specific production domains and local dev
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
-    // Allow specific origins or all origins in development
+
+    // Allowed origins
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
+      'https://www.nawasohail.com',
+      'https://nawasohail.com',
+      'https://writer-server.vercel.app',
       process.env.FRONTEND_URL
     ].filter(Boolean);
-    
+
     if (process.env.NODE_ENV === 'development' || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -41,12 +44,14 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
+// Explicitly enable preflight for all routes
+app.options('*', cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
