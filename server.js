@@ -17,6 +17,9 @@ const galleryRoutes = require('./routes/gallery');
 
 const app = express();
 
+// Trust proxy for rate limiting to work properly behind reverse proxies
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 
