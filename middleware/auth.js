@@ -22,3 +22,13 @@ exports.requireAdmin = (req, res, next) => {
   return res.status(403).json({ message: 'Forbidden' });
 };
 
+exports.requireCustomer = (req, res, next) => {
+  if (req.user && req.user.role === 'customer') return next();
+  return res.status(403).json({ message: 'Forbidden' });
+};
+
+exports.requireAuthOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'customer')) return next();
+  return res.status(403).json({ message: 'Forbidden' });
+};
+

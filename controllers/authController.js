@@ -21,9 +21,9 @@ exports.register = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(password, salt);
 
-    const user = await User.create({ name, email, password: hashed });
+    const user = await User.create({ name, email, password: hashed, role: 'customer' });
     const token = generateToken(user._id);
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     next(err);
   }
@@ -42,7 +42,7 @@ exports.login = async (req, res, next) => {
     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
     const token = generateToken(user._id);
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     next(err);
   }
@@ -66,7 +66,8 @@ exports.autoRegister = async (req, res, next) => {
         user: { 
           id: existingUser._id, 
           name: existingUser.name, 
-          email: existingUser.email 
+          email: existingUser.email,
+          role: existingUser.role
         },
         isNewUser: false
       });
@@ -93,7 +94,8 @@ exports.autoRegister = async (req, res, next) => {
       user: { 
         id: user._id, 
         name: user.name, 
-        email: user.email 
+        email: user.email,
+        role: user.role
       },
       isNewUser: true
     });
@@ -113,6 +115,90 @@ exports.me = async (req, res, next) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Utility function to promote user to admin (for development/admin use)
+exports.promoteToAdmin = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndUpdate(
+      userId, 
+      { role: 'admin' }, 
+      { new: true }
+    ).select('-password');
+    
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    res.json({ 
+      message: 'User promoted to admin successfully',
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role 
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Utility function to demote admin to customer
+exports.demoteToCustomer = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndUpdate(
+      userId, 
+      { role: 'customer' }, 
+      { new: true }
+    ).select('-password');
+    
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    res.json({ 
+      message: 'User demoted to customer successfully',
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role 
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Debug endpoint to check current user role
+exports.checkRole = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    
+    res.json({ 
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role
+      },
+      isAdmin: req.user.role === 'admin',
+      isCustomer: req.user.role === 'customer'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// List all users (admin only)
+exports.listUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    res.json({ users });
   } catch (err) {
     next(err);
   }

@@ -37,5 +37,13 @@ router.post(
 
 router.get('/me', authController.me);
 
+// Debug endpoint to check user role
+router.get('/check-role', authController.checkRole);
+
+// Admin role management routes (protected by admin middleware)
+router.get('/users', authController.listUsers);
+router.put('/promote/:userId', authController.promoteToAdmin);
+router.put('/demote/:userId', authController.demoteToCustomer);
+
 module.exports = router;
 
