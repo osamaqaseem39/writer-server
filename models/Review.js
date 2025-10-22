@@ -3,11 +3,16 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    location: { type: String, default: '' },
+    email: { type: String, required: true },
     rating: { type: Number, min: 1, max: 5, required: true },
-    text: { type: String, required: true },
-    imageUrl: { type: String },
+    comment: { type: String, required: true },
+    bookId: { type: String, required: true },
     approved: { type: Boolean, default: false },
+    orderId: { type: String },
+    orderStatus: { type: String },
+    isVerified: { type: Boolean, default: false },
+    location: { type: String },
+    profession: { type: String }
   },
   { timestamps: true }
 );

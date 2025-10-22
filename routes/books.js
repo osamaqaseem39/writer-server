@@ -1,26 +1,78 @@
 const express = require('express');
-const { body } = require('express-validator');
 const router = express.Router();
-const bookController = require('../controllers/bookController');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const Book = require('../models/Book');
 
-router.get('/', bookController.list);
-router.get('/:id', bookController.get);
+// Get all books
+router.get('/', async (req, res) => {
+  try {
+    const books = await Book.find({ status: 'Published' }).sort({ createdAt: -1 });
+    res.json({ books });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-router.post(
-  '/',
-  requireAuth,
-  requireAdmin,
-  [
-    body('title').notEmpty(),
-    body('author').notEmpty(),
-    body('price').isFloat({ gt: 0 }),
-  ],
-  bookController.create
-);
+// Get featured book
+router.get('/featured', async (req, res) => {
+  try {
+    const featuredBook = await Book.findOne({ featured: true, status: 'Published' });
+    if (!featuredBook) {
+      return res.status(404).json({ error: 'No featured book found' });
+    }
+    res.json({ book: featuredBook });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-router.put('/:id', requireAuth, requireAdmin, bookController.update);
-router.delete('/:id', requireAuth, requireAdmin, bookController.remove);
+// Get book by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    res.json({ book });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create new book
+router.post('/', async (req, res) => {
+  try {
+    const book = new Book(req.body);
+    await book.save();
+    res.status(201).json({ book });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Update book
+router.put('/:id', async (req, res) => {
+  try {
+    const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    res.json({ book });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete book
+router.delete('/:id', async (req, res) => {
+  try {
+    const book = await Book.findByIdAndDelete(req.params.id);
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    res.json({ message: 'Book deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;
-
