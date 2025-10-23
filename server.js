@@ -71,7 +71,9 @@ app.use(express.urlencoded({ extended: true }));
 // Database connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://Vercel-Admin-atlas-fuchsia-island:0uo9qPrXM182bd2I@atlas-fuchsia-island.ewhmznf.mongodb.net/?retryWrites=true&w=majority';
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 30000, // 30 seconds
       socketTimeoutMS: 45000, // 45 seconds
       maxPoolSize: 10,

@@ -9,12 +9,12 @@ const sampleBooks = [
   {
     title: "You Never Cried",
     author: "Nawa Sohail",
-    description: "Pace Town is a place of quiet nights, rustling leaves, and stories waiting to be told. Dan, a gentle bookseller and devoted father, has long kept his heart closed. When Rose arrives, carrying secrets of her own, everything begins to change.",
+    description: "Pace Town is a place of quiet nights, rustling leaves, and stories waiting to be told. Dan, a gentle bookseller and devoted father, has long kept his heart closed. When Rose arrives, carrying secrets of her own, everything begins to change. Together, they find comfort in starlit walks, whispered conversations, and the fragile beauty of second chances.",
     price: 2499,
     coverImageUrl: "/bookhomepage.jpeg",
     status: "Published",
     inventory: 50,
-    genre: "Fiction",
+    genre: "Contemporary Fiction",
     year: "2024",
     pages: 329,
     rating: 5.0,
@@ -25,7 +25,7 @@ const sampleBooks = [
     readingTime: "7 hours",
     publisher: "Daastan",
     publishDate: "08 Oct 2024",
-    fullDescription: "Yet the past is never far behind. When old wounds resurface, their love is tested in ways they never imagined. You Never Cried is a tender, atmospheric novel about love, vulnerability, and the courage it takes to finally let go."
+    fullDescription: "Yet the past is never far behind. When old wounds resurface, their love is tested in ways they never imagined. You Never Cried is a tender, atmospheric novel about love, vulnerability, and the courage it takes to finally let go. Set in the picturesque English countryside, this story explores themes of healing, forgiveness, and the transformative power of love. Through Dan and Rose's journey, readers will discover the beauty of second chances and the strength found in vulnerability."
   }
 ];
 
