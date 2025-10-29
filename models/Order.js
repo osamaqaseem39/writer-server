@@ -12,8 +12,22 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     totalAmount: { type: Number, required: true },
+    shippingCharges: { type: Number, default: 0 },
     status: { type: String, enum: ['Pending', 'Paid', 'Shipped', 'Completed', 'Cancelled'], default: 'Pending' },
+    paymentStatus: { type: String, enum: ['Unpaid', 'Paid', 'Refunded'], default: 'Unpaid' },
+    paymentMethod: { type: String, enum: ['COD', 'Online'], default: 'COD' },
     paymentId: { type: String },
+    shippingAddress: {
+      firstName: String,
+      lastName: String,
+      email: String,
+      phone: String,
+      address: String,
+      city: String,
+      state: String,
+      zipCode: String,
+      country: String,
+    },
   },
   { timestamps: true }
 );
