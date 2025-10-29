@@ -3,7 +3,7 @@ const BlogPost = require('../models/BlogPost');
 
 exports.list = async (req, res, next) => {
   try {
-    const query = req.user?.role === 'admin' ? {} : { published: true };
+    const query = req.user?.role === 'admin' ? {} : { status: 'Published' };
     const posts = await BlogPost.find(query).sort({ createdAt: -1 });
     res.json({ posts });
   } catch (err) { next(err); }
@@ -13,7 +13,7 @@ exports.get = async (req, res, next) => {
   try {
     const post = await BlogPost.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
-    if (!post.published && req.user?.role !== 'admin') {
+    if (post.status !== 'Published' && req.user?.role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden' });
     }
     res.json({ post });
