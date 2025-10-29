@@ -8,6 +8,7 @@ exports.list = async (req, res, next) => {
 	} catch (err) { next(err); }
 };
 
+
 exports.get = async (req, res, next) => {
 	try {
 		const image = await GalleryImage.findById(req.params.id);
